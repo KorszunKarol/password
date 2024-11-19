@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Iframe Integration</title>
+    <style>
+        .iframe-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 600px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="iframe-container">
+        <iframe
+            src="http://localhost:3000"
+            allow="clipboard-write"
+        ></iframe>
+    </div>
+
+    <script>
+        window.addEventListener('message', (event) => {
+            // In production, verify event.origin
+            console.log('Message from iframe:', event.data);
+
+            if (event.data.type === 'UPLOAD_COMPLETE') {
+                console.log('File processed:', event.data.payload.url);
+            }
+        });
+    </script>
+</body>
+</html>
