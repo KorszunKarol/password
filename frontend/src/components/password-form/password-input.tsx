@@ -1,37 +1,31 @@
 "use client"
 
-import Image from "next/image"
-import { cn } from "../../lib/utils"
-
 interface PasswordInputProps {
   disabled?: boolean
 }
 
 export const PasswordInput = ({ disabled }: PasswordInputProps) => {
   return (
-    <div className={cn(
-      "flex items-center w-[416px] px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm",
-      disabled && "opacity-50"
-    )}>
-      <div className="flex items-center gap-2 w-full">
-        <Image
-          src="/loading_icon.svg"
-          alt="Lock icon"
-          width={20}
-          height={20}
-          className="flex-shrink-0"
-          style={{ width: 20, height: 20 }}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          autoComplete="new-password"
-          disabled={disabled}
-          required
-          className="w-full text-gray-600 bg-transparent border-none outline-none placeholder-gray-500 disabled:cursor-not-allowed"
-        />
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+        <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.3333 6.16667V3.83333C18.3333 2.89991 18.3333 2.4332 18.1517 2.07668C17.9919 1.76308 17.7369 1.50811 17.4233 1.34832C17.0668 1.16667 16.6001 1.16667 15.6667 1.16667H4.33332C3.3999 1.16667 2.93319 1.16667 2.57667 1.34832C2.26307 1.50811 2.0081 1.76308 1.84831 2.07668C1.66666 2.4332 1.66666 2.89991 1.66666 3.83333V6.83333C1.66666 7.76675 1.66666 8.23346 1.84831 8.58998C2.0081 8.90359 2.26307 9.15855 2.57667 9.31834C2.93319 9.5 3.3999 9.5 4.33332 9.5H9.16666M9.99999 5.33333H10.0042M14.1667 5.33333H14.1708M5.83332 5.33333H5.83749M16.0417 11.1667V9.70833C16.0417 8.90292 15.3887 8.25 14.5833 8.25C13.7779 8.25 13.125 8.90292 13.125 9.70833V11.1667M10.2083 5.33333C10.2083 5.44839 10.115 5.54167 9.99999 5.54167C9.88493 5.54167 9.79166 5.44839 9.79166 5.33333C9.79166 5.21827 9.88493 5.125 9.99999 5.125C10.115 5.125 10.2083 5.21827 10.2083 5.33333ZM14.375 5.33333C14.375 5.44839 14.2817 5.54167 14.1667 5.54167C14.0516 5.54167 13.9583 5.44839 13.9583 5.33333C13.9583 5.21827 14.0516 5.125 14.1667 5.125C14.2817 5.125 14.375 5.21827 14.375 5.33333ZM6.04166 5.33333C6.04166 5.44839 5.94838 5.54167 5.83332 5.54167C5.71826 5.54167 5.62499 5.44839 5.62499 5.33333C5.62499 5.21827 5.71826 5.125 5.83332 5.125C5.94838 5.125 6.04166 5.21827 6.04166 5.33333ZM13 14.5H16.1667C16.6334 14.5 16.8667 14.5 17.045 14.4092C17.2018 14.3293 17.3293 14.2018 17.4092 14.045C17.5 13.8667 17.5 13.6334 17.5 13.1667V12.5C17.5 12.0333 17.5 11.7999 17.4092 11.6217C17.3293 11.4649 17.2018 11.3374 17.045 11.2575C16.8667 11.1667 16.6334 11.1667 16.1667 11.1667H13C12.5333 11.1667 12.2999 11.1667 12.1217 11.2575C11.9649 11.3374 11.8374 11.4649 11.7575 11.6217C11.6667 11.7999 11.6667 12.0333 11.6667 12.5V13.1667C11.6667 13.6334 11.6667 13.8667 11.7575 14.045C11.8374 14.2018 11.9649 14.3293 12.1217 14.4092C12.2999 14.5 12.5333 14.5 13 14.5Z"
+            stroke="#667085"
+            strokeWidth="1.66667"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
+      <input
+        type="password"
+        name="password"
+        placeholder="Enter Password"
+        autoComplete="new-password"
+        disabled={disabled}
+        required
+        className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
     </div>
   )
 }

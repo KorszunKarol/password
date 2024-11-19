@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
-import { useDropzone } from "react-dropzone"
+import { useDropzone, DropzoneOptions } from "react-dropzone"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
@@ -29,13 +29,18 @@ export const FileDropzone = ({ onFileSelect, accept }: FileDropzoneProps) => {
     input.click()
   }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const dropzoneOptions: DropzoneOptions = {
     onDrop: handleDrop,
     accept,
     multiple: false,
     noClick: true,
     noKeyboard: true,
-  })
+    onDragEnter: () => {},
+    onDragOver: () => {},
+    onDragLeave: () => {}
+  }
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone(dropzoneOptions)
 
   return (
     <div className="w-[416px]">
@@ -48,14 +53,14 @@ export const FileDropzone = ({ onFileSelect, accept }: FileDropzoneProps) => {
       >
         <input {...getInputProps()} className="hidden" />
         <div className="flex flex-col items-center gap-5">
-          <div className="relative w-16 h-16 bg-gray-100 border-8 border-gray-50 rounded-full">
+          <div className="relative flex items-center justify-center w-16 h-16 bg-[#EAECF0] border-8 border-[#F2F4F7] rounded-full">
             <Image
               src="/upload-cloud-01.svg"
               alt="Upload cloud icon"
               width={32}
               height={32}
               priority
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              className="w-8 h-8"
             />
           </div>
 

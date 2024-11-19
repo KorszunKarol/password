@@ -37,7 +37,7 @@ export const UploadFlow: React.FC = () => {
     return (
       <LoadingView
         fileName={file?.name || ""}
-        fileSize={`${Math.round((file?.size || 0) / 1024)} KB`}
+        fileSize={file?.size || 0}
       />
     )
   }

@@ -1,38 +1,42 @@
-import os
-from pptx import Presentation
-import tempfile
-import shutil
+import io
+import logging
 from cryptography.fernet import Fernet
-import base64
-import hashlib
+from base64 import b64encode
+from .s3 import S3Client
+
+logger = logging.getLogger(__name__)
 
 class PowerPointProcessor:
-    def add_password(self, file_path: str, password: str) -> str:
+    def __init__(self):
+        self.s3_client = S3Client()
+
+    async def add_password(self, file_content: bytes, file_id: str, password: str) -> str:
+        """
+        Add encryption-based protection to a PowerPoint file content
+        Returns: S3 presigned URL for the encrypted file
+        """
         try:
-            # Create a temporary directory for processing
-            temp_dir = tempfile.mkdtemp()
-            filename = os.path.basename(file_path)
-            output_path = os.path.join(temp_dir, f"protected_{filename}")
-
-            # Copy file to temp directory
-            shutil.copy2(file_path, output_path)
-
             # Generate a key from the password
-            key = base64.urlsafe_b64encode(hashlib.sha256(password.encode()).digest())
-            f = Fernet(key)
+            key = b64encode(password.encode()[:32].ljust(32, b'\0'))
+            fernet = Fernet(key)
 
-            # Read the file
-            with open(output_path, 'rb') as file:
-                file_data = file.read()
+            # Encrypt the file content
+            encrypted_data = fernet.encrypt(file_content)
 
-            # Encrypt the file
-            encrypted_data = f.encrypt(file_data)
+            # Upload to S3
+            file_key = f"encrypted/{file_id}.pptz"
+            url = await self.s3_client.upload_file(encrypted_data, file_key)
 
-            # Write the encrypted file
-            with open(output_path, 'wb') as file:
-                file.write(encrypted_data)
-
-            return output_path
+            return url
 
         except Exception as e:
-            raise Exception(f"Failed to add password protection: {str(e)}")
+            logger.error(f"Failed to process file: {str(e)}")
+            raise
+
+    def cleanup(self):
+        """Clean up temporary files"""
+        try:
+            shutil.rmtree(self.temp_dir)
+            logger.info("Cleaned up temporary directory")
+        except Exception as e:
+            logger.error(f"Failed to cleanup: {str(e)}")

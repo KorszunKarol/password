@@ -5,3 +5,5 @@ python-pptx
 aiofiles
 python-magic
 cryptography
+boto3
+python-dotenv
