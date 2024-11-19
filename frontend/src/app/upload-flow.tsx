@@ -22,15 +22,23 @@ export const UploadFlow: React.FC = () => {
     setIsLoading(true)
     try {
       const response = await api.uploadFile(file, password)
-      setDownloadUrl(api.getDownloadUrl(response.id))
+      const url = await api.getDownloadUrl(response.id)
+      setDownloadUrl(url)
     } catch (error) {
       console.error('Upload failed:', error)
+    } finally {
       setIsLoading(false)
     }
   }
 
+  const handleDownload = () => {
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank')
+    }
+  }
+
   if (downloadUrl) {
-    return <SuccessView url={downloadUrl} onDownload={() => window.open(downloadUrl, '_blank')} />
+    return <SuccessView url={downloadUrl} onDownload={handleDownload} />
   }
 
   if (isLoading) {

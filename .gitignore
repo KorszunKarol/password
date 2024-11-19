@@ -29,6 +29,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Virtual Environment
+.venv/
 venv/
 env/
 ENV/
@@ -48,19 +51,28 @@ out/
 build/
 dist/
 
-# Misc
-.DS_Store
-*.pem
-.env*
+
+test.html
+project_req.txt
+
+
+.env
+.env.*
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
 
-# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 debug.log
 
-# IDE
 .idea/
 .vscode/
 *.swp
@@ -70,7 +82,11 @@ debug.log
 .classpath
 .settings/
 
-# OS
+image-extractor-webapp-main/
+slidespeak-image-extractor-main/
+
+
+
 .DS_Store
 .DS_Store?
 ._*
@@ -80,34 +96,16 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 
-# Local env files
-.env*.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Vercel
 .vercel
 
-# TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# Python virtual environment
-.venv/
-venv/
-
-# FastAPI
-__pycache__/
-*.pyc
-
-# Database
 *.sqlite
 *.sqlite3
 *.db
 
-# Local development
 docker-compose.override.yml

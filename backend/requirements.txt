@@ -1,7 +1,7 @@
 fastapi
 python-multipart
 uvicorn
-python-pptx
+msoffcrypto-tool
 aiofiles
 python-magic
 cryptography

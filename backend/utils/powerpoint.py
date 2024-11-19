@@ -1,42 +1,37 @@
 import io
 import logging
-from cryptography.fernet import Fernet
-from base64 import b64encode
+from msoffcrypto import OfficeFile
 from .s3 import S3Client
 
 logger = logging.getLogger(__name__)
 
 class PowerPointProcessor:
+    """Process PowerPoint files with password protection using msoffcrypto"""
+
     def __init__(self):
         self.s3_client = S3Client()
 
-    async def add_password(self, file_content: bytes, file_id: str, password: str) -> str:
+    async def add_password(self, file_content: bytes, file_id: str, original_filename: str, password: str) -> str:
         """
-        Add encryption-based protection to a PowerPoint file content
-        Returns: S3 presigned URL for the encrypted file
+        Add password protection to PowerPoint file using msoffcrypto
+        Returns: S3 presigned URL for the protected file
         """
         try:
-            # Generate a key from the password
-            key = b64encode(password.encode()[:32].ljust(32, b'\0'))
-            fernet = Fernet(key)
+            input_buffer = io.BytesIO(file_content)
+            output_buffer = io.BytesIO()
+            office_file = OfficeFile(input_buffer)
+            office_file.encrypt(password, output_buffer)
+            protected_content = output_buffer.getvalue()
 
-            # Encrypt the file content
-            encrypted_data = fernet.encrypt(file_content)
+            # Use original filename in the S3 key while keeping UUID to avoid conflicts
+            file_key = f"protected/{file_id}_{original_filename}"
+            url = await self.s3_client.upload_file(protected_content, file_key)
 
-            # Upload to S3
-            file_key = f"encrypted/{file_id}.pptz"
-            url = await self.s3_client.upload_file(encrypted_data, file_key)
+            input_buffer.close()
+            output_buffer.close()
 
             return url
 
         except Exception as e:
-            logger.error(f"Failed to process file: {str(e)}")
+            logger.error(f"Failed to add password protection: {str(e)}")
             raise
-
-    def cleanup(self):
-        """Clean up temporary files"""
-        try:
-            shutil.rmtree(self.temp_dir)
-            logger.info("Cleaned up temporary directory")
-        except Exception as e:
-            logger.error(f"Failed to cleanup: {str(e)}")
