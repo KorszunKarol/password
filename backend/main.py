@@ -1,16 +1,22 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, RedirectResponse
 import uuid
 import logging
 from utils.powerpoint import PowerPointProcessor
 from utils.s3 import S3Client
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 s3_client = S3Client()
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,7 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("https_redirect")
+async def https_redirect(request, call_next):
+    if request.url.scheme == "http":
+        url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(url))
+    return await call_next(request)
+
 @app.post("/api/upload")
+@limiter.limit("10/minute")
 async def upload_file(file: UploadFile = File(...), password: str = Form(...)):
     """Handle file upload and password protection"""
     try:
@@ -39,11 +53,10 @@ async def upload_file(file: UploadFile = File(...), password: str = Form(...)):
             })
 
         except ValueError as e:
-            # Return 400 instead of 500 for validation errors
             raise HTTPException(status_code=400, detail=str(e))
 
     except HTTPException:
-        raise  # Re-raise HTTP exceptions
+        raise
     except Exception as e:
         logger.error(f"Upload failed: {str(e)}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred")

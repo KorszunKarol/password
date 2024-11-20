@@ -91,3 +91,14 @@ class S3Client:
         except ClientError as e:
             logger.error(f"S3 list objects error: {str(e)}")
             raise
+
+    async def cleanup_file(self, file_key: str):
+        """Delete file after download"""
+        try:
+            self.s3.delete_object(
+                Bucket=self.bucket_name,
+                Key=file_key
+            )
+            logger.info(f"Cleaned up file: {file_key}")
+        except Exception as e:
+            logger.error(f"Failed to cleanup file: {str(e)}")

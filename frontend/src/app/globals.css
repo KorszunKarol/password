@@ -19,24 +19,3 @@
     transform: rotate(360deg);
   }
 }
-
-@keyframes pendulum {
-  0% {
-    transform: rotate(0deg);
-  }
-  20% {
-    transform: rotate(180deg);
-  }
-  40% {
-    transform: rotate(360deg);
-  }
-  60% {
-    transform: rotate(540deg);
-  }
-  80% {
-    transform: rotate(720deg);
-  }
-  100% {
-    transform: rotate(1080deg);
-  }
-}

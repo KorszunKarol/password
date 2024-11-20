@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { useState } from "react"
-import { FileDropzone } from "@/components/file-selection/dropzone"
+import { FileDropzone } from "@/components/file-selection"
 import { PasswordForm, LoadingView } from "@/components/password-form"
-import { SuccessView } from "@/components/success/view"
+import { SuccessView } from "@/components/success"
 import * as api from "@/lib/api"
 
 export const UploadFlow: React.FC = () => {
