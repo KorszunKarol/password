@@ -58,7 +58,6 @@ export const SuccessView = ({ onDownload }: SuccessViewProps) => {
       <div className="flex flex-col items-start p-4 gap-4 w-[416px] h-[158px] bg-white border border-[#D0D5DD] rounded-xl">
         <div className="flex flex-col items-center p-0 gap-6 w-[384px] h-[126px]">
           <PowerPointIcon />
-
           <h3 className="w-[384px] h-[30px] font-figtree font-semibold text-xl leading-[30px] text-center text-[#101828]">
             Password successfully added!
           </h3>

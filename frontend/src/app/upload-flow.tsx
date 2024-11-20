@@ -11,24 +11,38 @@ export const UploadFlow: React.FC = () => {
   const [file, setFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string>("")
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile)
+    setError("")
   }
 
   const handlePasswordSubmit = async (password: string) => {
     if (!file) return
 
     setIsLoading(true)
+    setError("")
+
     try {
       const response = await api.uploadFile(file, password)
       const url = await api.getDownloadUrl(response.id)
       setDownloadUrl(url)
-    } catch (error) {
-      console.error('Upload failed:', error)
-    } finally {
+    } catch (err: any) {
+      console.log("Error in UploadFlow:", err)
+      if (err.response?.status === 400) {
+        setError("This file is already password protected. Please try another file.")
+      } else {
+        setError(err.message || "An error occurred during upload")
+      }
       setIsLoading(false)
+      return
     }
+    setIsLoading(false)
+  }
+
+  const handlePasswordFocus = () => {
+    setError("")
   }
 
   const handleDownload = () => {
@@ -42,12 +56,7 @@ export const UploadFlow: React.FC = () => {
   }
 
   if (isLoading) {
-    return (
-      <LoadingView
-        fileName={file?.name || ""}
-        fileSize={file?.size || 0}
-      />
-    )
+    return <LoadingView fileName={file?.name || ""} fileSize={file?.size || 0} />
   }
 
   if (file) {
@@ -56,6 +65,9 @@ export const UploadFlow: React.FC = () => {
         file={file}
         onCancel={() => setFile(null)}
         onSubmit={handlePasswordSubmit}
+        isSubmitting={isLoading}
+        error={error}
+        onPasswordFocus={handlePasswordFocus}
       />
     )
   }

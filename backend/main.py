@@ -21,24 +21,15 @@ app.add_middleware(
 )
 
 @app.post("/api/upload")
-async def upload_file(
-    file: UploadFile = File(...),
-    password: str = Form(...)
-):
-    logger.info(f"Received upload request for file: {file.filename}")
-
+async def upload_file(file: UploadFile = File(...), password: str = Form(...)):
+    """Handle file upload and password protection"""
     try:
         content = await file.read()
         file_id = str(uuid.uuid4())
 
         try:
             processor = PowerPointProcessor()
-            download_url = await processor.add_password(
-                content,
-                file_id,
-                file.filename,
-                password
-            )
+            download_url = await processor.add_password(content, file_id, file.filename, password)
 
             return JSONResponse({
                 "id": file_id,
@@ -47,34 +38,35 @@ async def upload_file(
                 "message": "File uploaded and protected successfully"
             })
 
-        except Exception as e:
-            logger.error(f"Failed to add password protection: {str(e)}")
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to add password protection to the file"
-            )
+        except ValueError as e:
+            # Return 400 instead of 500 for validation errors
+            raise HTTPException(status_code=400, detail=str(e))
 
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
     except Exception as e:
         logger.error(f"Upload failed: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
 @app.get("/api/download/{file_id}")
-async def download_file(file_id: str, filename: str):
+async def download_file(file_id: str):
+    """Generate download URL for protected file"""
     try:
-        file_key = f"protected/{file_id}_{filename}"
-        download_url = await s3_client.get_download_url(file_key)
+        objects = await s3_client.list_objects(f"protected/{file_id}")
+        if not objects:
+            raise HTTPException(status_code=404, detail="File not found")
+
+        file_key = objects[0]
+        original_filename = file_key.split('/')[-1]
+
+        download_url = await s3_client.get_download_url(
+            file_key=file_key,
+            response_filename=f"protected_{original_filename}"
+        )
 
         logger.info(f"Generated download URL for file: {file_key}")
-        return JSONResponse({
-            "url": download_url
-        })
+        return JSONResponse({"url": download_url})
 
     except Exception as e:
         logger.error(f"Download failed: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to generate download URL"
-        )
+        raise HTTPException(status_code=500, detail="Failed to generate download URL")

@@ -17,6 +17,12 @@ const config: Config = {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            colors: {
+                destructive: {
+                    DEFAULT: "#EF4444", // Red-500
+                    foreground: "#991B1B", // Red-800
+                }
+            },
         },
     },
     plugins: [require("tailwindcss-animate")],

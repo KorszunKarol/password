@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { FormEvent } from "react"
+import { FormEvent, useState } from "react"
 import { FileInfo } from "./file-info"
 import { PasswordInput } from "./password-input"
 import { ActionButtons } from "./action-buttons"
@@ -11,13 +11,17 @@ interface PasswordFormProps {
   onCancel: () => void
   onSubmit: (password: string) => Promise<void>
   isSubmitting?: boolean
+  error?: string
+  onPasswordFocus?: () => void
 }
 
 export const PasswordForm: React.FC<PasswordFormProps> = ({
   file,
   onCancel,
   onSubmit,
-  isSubmitting = false
+  isSubmitting = false,
+  error,
+  onPasswordFocus
 }) => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -38,7 +42,11 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
 
       <div className="flex flex-col gap-3">
         <FileInfo name={file.name} size={file.size} />
-        <PasswordInput disabled={isSubmitting} />
+        <PasswordInput
+          disabled={isSubmitting}
+          error={error}
+          onFocus={onPasswordFocus}
+        />
       </div>
       <ActionButtons
         onCancel={onCancel}
