@@ -3,9 +3,9 @@
 import * as React from "react"
 import { useState } from "react"
 import { FileDropzone } from "@/components/file-selection"
-import { PasswordForm, LoadingView } from "@/components/password-form"
+import { PasswordForm } from "@/components/password-form"
+import { LoadingView } from "@/components/loading"
 import { SuccessView } from "@/components/success"
-import * as api from "@/lib/api"
 
 export const UploadFlow: React.FC = () => {
   const [file, setFile] = useState<File | null>(null)
@@ -25,20 +25,32 @@ export const UploadFlow: React.FC = () => {
     setError("")
 
     try {
-      const response = await api.uploadFile(file, password)
-      const url = await api.getDownloadUrl(response.id)
-      setDownloadUrl(url)
-    } catch (err: any) {
-      console.log("Error in UploadFlow:", err)
-      if (err.response?.status === 400) {
-        setError("This file is already password protected. Please try another file.")
-      } else {
-        setError(err.message || "An error occurred during upload")
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('password', password)
+
+      const response = await fetch('http://localhost:8000/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Upload failed')
       }
+
+      const data = await response.json()
+      setDownloadUrl(data.url)
+    } catch (err) {
+      console.error("Error in UploadFlow:", err)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("An unexpected error occurred")
+      }
+    } finally {
       setIsLoading(false)
-      return
     }
-    setIsLoading(false)
   }
 
   const handlePasswordFocus = () => {
@@ -51,34 +63,39 @@ export const UploadFlow: React.FC = () => {
     }
   }
 
-  if (downloadUrl) {
-    return <SuccessView url={downloadUrl} onDownload={handleDownload} />
-  }
-
-  if (isLoading) {
-    return <LoadingView fileName={file?.name || ""} fileSize={file?.size || 0} />
-  }
-
-  if (file) {
+  if (isLoading && file) {
     return (
-      <PasswordForm
-        file={file}
-        onCancel={() => setFile(null)}
-        onSubmit={handlePasswordSubmit}
-        isSubmitting={isLoading}
-        error={error}
-        onPasswordFocus={handlePasswordFocus}
+      <LoadingView
+        fileName={file.name}
+        fileSize={file.size}
       />
     )
   }
 
+  if (downloadUrl) {
+    return <SuccessView url={downloadUrl} onDownload={handleDownload} />
+  }
+
   return (
-    <FileDropzone
-      onFileSelect={handleFileSelect}
-      accept={{
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
-        "application/vnd.ms-powerpoint": [".ppt"],
-      }}
-    />
+    <div className="flex flex-col gap-4">
+      {file ? (
+        <PasswordForm
+          file={file}
+          onCancel={() => setFile(null)}
+          onSubmit={handlePasswordSubmit}
+          isSubmitting={isLoading}
+          error={error}
+          onPasswordFocus={handlePasswordFocus}
+        />
+      ) : (
+        <FileDropzone
+          onFileSelect={handleFileSelect}
+          accept={{
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+            'application/vnd.ms-powerpoint': ['.ppt']
+          }}
+        />
+      )}
+    </div>
   )
 }

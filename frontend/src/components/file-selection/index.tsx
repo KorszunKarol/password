@@ -81,14 +81,14 @@ export const FileDropzone = ({ onFileSelect, accept }: FileDropzoneProps) => {
     >
       <input {...getInputProps()} className="hidden" />
       <div className="flex flex-col items-center gap-5">
-        <div className="relative flex items-center justify-center w-16 h-16 bg-[#EAECF0] border-8 border-[#F2F4F7] rounded-full">
+        <div className="relative flex items-center justify-center w-[64px] h-[64px] bg-[#EAECF0] border-8 border-[#F2F4F7] rounded-[88px]">
           <Image
             src="/upload-cloud-01.svg"
             alt="Upload cloud icon"
-            width={32}
-            height={32}
+            width={26.67}
+            height={24}
             priority
-            className="w-8 h-8"
+            className="w-[26.67px] h-[24px]"
           />
         </div>
 

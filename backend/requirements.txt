@@ -7,3 +7,5 @@ python-magic
 cryptography
 boto3
 python-dotenv
+slowapi
+fastapi-utils

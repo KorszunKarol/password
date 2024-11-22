@@ -3,14 +3,12 @@ import os
 from botocore.exceptions import ClientError
 import logging
 from dotenv import load_dotenv
-from urllib.parse import urlparse
 
 load_dotenv()
-
 logger = logging.getLogger(__name__)
 
 class S3Client:
-    """AWS S3 client for file operations"""
+    """AWS S3 client following best practices"""
 
     def __init__(self):
         self.region = os.getenv('AWS_REGION')
@@ -25,80 +23,88 @@ class S3Client:
     async def upload_file(self, file_data: bytes, file_key: str) -> str:
         """Upload file to S3 and return presigned URL"""
         try:
+            # Upload file
             self.s3.put_object(
                 Bucket=self.bucket_name,
                 Key=file_key,
                 Body=file_data
             )
+
+            # Generate URL that expires in 5 minutes
             url = self.s3.generate_presigned_url(
                 ClientMethod='get_object',
                 Params={
                     'Bucket': self.bucket_name,
-                    'Key': file_key
+                    'Key': file_key,
                 },
-                ExpiresIn=3600
+                ExpiresIn=300  # 5 minutes
             )
-            logger.info(f"File uploaded successfully: {file_key}")
+
+            logger.info(f"File uploaded: {file_key}")
             return url
         except ClientError as e:
             logger.error(f"S3 upload error: {str(e)}")
             raise
 
-    async def get_download_url(self, file_key: str, response_filename: str | None = None) -> str:
-        """Generate presigned URL for downloading with optional custom filename"""
+    async def get_download_url(self, file_key: str) -> str:
+        """Generate presigned URL for downloading"""
         try:
-            params = {
-                'Bucket': self.bucket_name,
-                'Key': file_key,
-            }
-
-            if response_filename:
-                params['ResponseContentDisposition'] = f'attachment; filename="{response_filename}"'
-
             url = self.s3.generate_presigned_url(
                 ClientMethod='get_object',
-                Params=params,
-                ExpiresIn=3600
+                Params={
+                    'Bucket': self.bucket_name,
+                    'Key': file_key,
+                },
+                ExpiresIn=300  # 5 minutes
             )
+            logger.info(f"Generated download URL for: {file_key}")
             return url
         except ClientError as e:
-            logger.error(f"Failed to generate presigned URL: {str(e)}")
+            logger.error(f"Failed to generate download URL: {str(e)}")
             raise
 
     async def delete_file(self, file_key: str):
         """Delete file from S3"""
         try:
-            self.s3.delete_object(
+            logger.info(f"Attempting to delete file: {file_key}")
+            response = self.s3.delete_object(
                 Bucket=self.bucket_name,
                 Key=file_key
             )
+            # Check if deletion was successful
+            if response.get('DeleteMarker', False):
+                logger.info(f"File deleted successfully: {file_key}")
+            else:
+                logger.info(f"File deletion response: {response}")
+
         except ClientError as e:
-            logger.error(f"S3 delete error: {str(e)}")
+            logger.error(f"S3 delete error for {file_key}: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error deleting {file_key}: {str(e)}")
             raise
 
     async def list_objects(self, prefix: str) -> list[str]:
-        """List objects in S3 bucket with given prefix"""
+        """List objects with specified prefix"""
         try:
             response = self.s3.list_objects_v2(
                 Bucket=self.bucket_name,
                 Prefix=prefix
             )
-
-            if 'Contents' not in response:
-                return []
-
-            return [obj['Key'] for obj in response['Contents']]
+            return [obj['Key'] for obj in response.get('Contents', [])]
         except ClientError as e:
             logger.error(f"S3 list objects error: {str(e)}")
             raise
 
-    async def cleanup_file(self, file_key: str):
-        """Delete file after download"""
+    async def get_object_metadata(self, file_key: str):
+        """Get object metadata"""
         try:
-            self.s3.delete_object(
+            response = self.s3.head_object(
                 Bucket=self.bucket_name,
                 Key=file_key
             )
-            logger.info(f"Cleaned up file: {file_key}")
-        except Exception as e:
-            logger.error(f"Failed to cleanup file: {str(e)}")
+            return response
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return None
+            raise

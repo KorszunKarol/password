@@ -18,7 +18,6 @@ class PowerPointProcessor:
             output_buffer = io.BytesIO()
             office_file = OfficeFile(input_buffer)
 
-            # Try to encrypt - if it fails with a specific error, the file is likely already encrypted
             try:
                 office_file.encrypt(password, output_buffer)
             except Exception as e:

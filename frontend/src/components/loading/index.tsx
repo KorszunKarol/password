@@ -67,9 +67,9 @@ const ActionButtons = () => (
   </div>
 )
 
-export const LoadingView = ({ fileName, fileSize }: LoadingViewProps) => {
+export const LoadingView: React.FC<LoadingViewProps> = ({ fileName, fileSize }) => {
   return (
-    <div className="flex flex-col p-6 gap-4 w-[464px] bg-white shadow-lg rounded-2xl">
+    <div className="flex flex-col items-start p-6 gap-4 w-[464px] bg-white shadow-md rounded-2xl">
       <FileCardHeader name={fileName} size={fileSize} />
       <LoadingMessage />
       <ActionButtons />
