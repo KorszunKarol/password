@@ -6,6 +6,8 @@ import { FileDropzone } from "@/components/file-selection"
 import { PasswordForm } from "@/components/password-form"
 import { LoadingView } from "@/components/loading"
 import { SuccessView } from "@/components/success"
+import { ApiError } from "@/lib/errors"
+import { uploadFile } from "@/lib/api"
 
 export const UploadFlow: React.FC = () => {
   const [file, setFile] = useState<File | null>(null)
@@ -25,26 +27,12 @@ export const UploadFlow: React.FC = () => {
     setError("")
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('password', password)
-
-      const response = await fetch('http://localhost:8000/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Upload failed')
-      }
-
-      const data = await response.json()
-      setDownloadUrl(data.url)
+      const response = await uploadFile(file, password)
+      setDownloadUrl(response.url)
     } catch (err) {
       console.error("Error in UploadFlow:", err)
-      if (err instanceof Error) {
-        setError(err.message)
+      if (err instanceof ApiError) {
+        setError(err.detail)
       } else {
         setError("An unexpected error occurred")
       }

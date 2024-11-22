@@ -10,7 +10,6 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import asyncio
 from datetime import datetime, timezone
-import magic
 import os
 from typing import List
 
@@ -28,13 +27,14 @@ def get_allowed_origins() -> List[str]:
     env = os.getenv("ENV", "development")
     if env == "production":
         return [
-            "http://frontend:3000",  
-            "http://localhost:3000"
+            os.getenv("FRONTEND_URL", "http://frontend:3000"),
         ]
     return [
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "http://frontend:3000" 
     ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_allowed_origins(),

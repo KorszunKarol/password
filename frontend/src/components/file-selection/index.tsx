@@ -5,29 +5,24 @@ import { useDropzone, DropzoneOptions } from "react-dropzone"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import ErrorDisplay from "@/components/ui/error-display"
+import { AllowedFileType, uploadConfig } from "@/config/upload.config"
 
 interface FileDropzoneProps {
   onFileSelect: (file: File) => void
   accept: Record<string, string[]>
 }
 
-const MAX_FILE_SIZE = 200 * 1024 * 1024 // 200MB
-
 export const FileDropzone = ({ onFileSelect, accept }: FileDropzoneProps) => {
   const [error, setError] = useState<string>("")
 
   const validateFile = (file: File) => {
-    if (file.size > MAX_FILE_SIZE) {
-      setError('File size exceeds the maximum limit of 200MB')
+    if (file.size > uploadConfig.validation.maxFileSize) {
+      setError(uploadConfig.messages.fileTooLarge)
       return false
     }
 
-    const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'application/vnd.ms-powerpoint'
-    ]
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Please upload a PowerPoint file (.ppt or .pptx)')
+    if (!uploadConfig.validation.allowedFileTypes.includes(file.type as AllowedFileType)) {
+      setError(uploadConfig.messages.invalidFileType)
       return false
     }
 
@@ -48,7 +43,7 @@ export const FileDropzone = ({ onFileSelect, accept }: FileDropzoneProps) => {
     e.stopPropagation()
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.ppt,.pptx'
+    input.accept = uploadConfig.validation.allowedFileExtensions.join(',')
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file && validateFile(file)) {
