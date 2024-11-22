@@ -16,6 +16,7 @@ services:
       - backend
 
   backend:
+    platform: linux/amd64  # or linux/arm64 if you're on M1/M2 Mac
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -26,7 +27,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
-      - ENV=${NODE_ENV:-production}
+      - ENV=${ENV:-development}  #
     networks:
       - app-network
 
