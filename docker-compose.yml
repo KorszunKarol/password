@@ -16,7 +16,6 @@ services:
       - backend
 
   backend:
-    platform: linux/amd64  # or linux/arm64 if you're on M1/M2 Mac
     build:
       context: ./backend
       dockerfile: Dockerfile
